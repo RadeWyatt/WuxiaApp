@@ -2,7 +2,10 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 
 var novel = "https://www.wuxiaworld.com/novel/the-second-coming-of-gluttony/scog-chapter-1";
-var myNext;
+
+var nextChapter;
+var prevChapter;
+var chapterBody;
 
 const fetchData = async () => {
     const result = await axios.get(novel);
@@ -11,19 +14,31 @@ const fetchData = async () => {
 
 const getChapter = async() => {
     const page = await fetchData();
-    page(".chapter-nav").first().remove();
-    var nextchapterlink = page(".chapter-nav").attr('href');
-    const chapter = page('#chapter-content').html();
-    document.body.innerHTML = chapter;
-    myNext = novel.slice(0, 26) + nextchapterlink;
+
+    prevChapter = page(".chapter-nav").first().attr('href');
+    nextChapter = page(".chapter-nav").next().attr('href');
+    chapterBody = page('#chapter-content').html();
+
+    document.body.innerHTML = chapterBody;
+
     document.getElementsByClassName('chapter-nav')[0].removeAttribute('href');
-    document.getElementsByClassName('chapter-nav')[0].setAttribute('onclick', "nextChapter()");
+    document.getElementsByClassName('chapter-nav')[1].removeAttribute('href');
+    document.getElementsByClassName('chapter-nav')[0].setAttribute('onclick', "prev()");
+    document.getElementsByClassName('chapter-nav')[1].setAttribute('onclick', "next()");
 }
 
 getChapter();
 
-function nextChapter()
+async function prev()
 {
+    var myPrev = novel.slice(0, 26) + prevChapter;
+    novel = myPrev;
+    getChapter();
+}
+
+async function next()
+{
+    var myNext = novel.slice(0, 26) + nextChapter;
     novel = myNext;
     getChapter();
 }
